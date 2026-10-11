@@ -6,22 +6,26 @@
 <title>Vérif observateurs – course</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;font-family:system-ui,sans-serif;background:#f4f4f5;color:#111;-webkit-user-select:none;user-select:none}
-nav{display:flex;position:sticky;top:0;z-index:2;background:#111}
-nav button{flex:1;padding:14px 4px;border:0;background:none;color:#aaa;font-size:16px}
+html{height:100%}
+body{display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden;margin:0;font-family:system-ui,sans-serif;background:#f4f4f5;color:#111;-webkit-user-select:none;user-select:none}
+nav{display:flex;flex:none;background:#111}
+nav button{flex:1;padding:10px 4px;border:0;background:none;color:#aaa;font-size:16px}
 nav button.on{color:#fff;border-bottom:3px solid #fff}
-section{padding:10px;max-width:760px;margin:auto}
-#clock{font-size:64px;font-weight:700;text-align:center;font-variant-numeric:tabular-nums;line-height:1}
-#status{text-align:center;color:#555;margin:4px 0 8px;min-height:1.2em}
-.row{display:flex;gap:8px;margin:8px 0}
-.row button,#reset,.btn{flex:1;padding:14px;font-size:16px;border:0;border-radius:10px;background:#111;color:#fff}
+section{flex:1;min-height:0;overflow-y:auto;width:100%;padding:8px;max-width:760px;margin:0 auto}
+section[hidden]{display:none!important}
+#course{display:flex;flex-direction:column;overflow:hidden;padding-bottom:max(8px,env(safe-area-inset-bottom))}
+#clock{font-size:clamp(30px,8vh,64px);font-weight:700;text-align:center;font-variant-numeric:tabular-nums;line-height:1}
+#status{text-align:center;color:#555;margin:2px 0;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row{display:flex;gap:6px;margin:6px 0}
+.row button,.btn{flex:1;padding:12px 4px;font-size:15px;border:0;border-radius:10px;background:#111;color:#fff}
 #undo,#reset{background:#71717a}#stop{background:#b91c1c}
 button:disabled{opacity:.35}
-.card{display:flex;margin:8px 0;border-radius:14px;overflow:hidden;color:#fff;min-height:84px;touch-action:manipulation}
+#cards{flex:1;min-height:0;display:flex;flex-direction:column;gap:6px}
+.card{flex:1;min-height:0;display:flex;border-radius:14px;overflow:hidden;color:#fff;touch-action:manipulation}
 .card.flash{filter:brightness(1.6)}
-.main{flex:1;padding:10px 14px}
-.main b{font-size:24px;display:block}
-.main small{font-size:14px;opacity:.95}
+.main{flex:1;min-width:0;padding:2px 14px;display:flex;flex-direction:column;justify-content:center;line-height:1.15}
+.main b{font-size:clamp(17px,3.4vh,28px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.main small{font-size:clamp(11px,1.9vh,15px);opacity:.95;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pz{width:96px;display:flex;align-items:center;justify-content:center;text-align:center;background:rgba(0,0,0,.3);font-size:15px;font-weight:600;white-space:pre-line}
 .pz.act{background:#111}
 .pz.off{opacity:.5}
@@ -46,9 +50,8 @@ td,th{border:1px solid #ddd;padding:4px;text-align:center}
 <section id="course">
   <div id="clock">12:00</div>
   <div id="status"></div>
-  <div class="row"><button id="go">▶ Démarrer</button><button id="undo">↩ Annuler</button><button id="stop">■ Terminer</button></div>
+  <div class="row"><button id="go">▶ Départ</button><button id="undo">↩ Annuler</button><button id="stop">■ Terminer</button><button id="reset">⟲ Nouvelle</button></div>
   <div id="cards"></div>
-  <button id="reset" style="width:100%">Nouvelle course (efface les passages)</button>
 </section>
 
 <section id="res" hidden>
@@ -232,7 +235,7 @@ const flash={};
 function draw(){
   const run=running(),t=run?now():0;
   $('clock').textContent=fmt(S.t0==null?S.cfg.dur*60:run?S.cfg.dur*60-t:0);
-  $('status').textContent=S.t0==null?'Avant le départ : touchez un élève pour régler nom / VMA / projet':run?'Un appui à chaque passage devant vous – les pauses sont détectées toutes seules':'Course terminée – voir Résultats';
+  $('status').textContent=S.t0==null?'Touchez un élève pour régler nom / VMA / projet':run?'Un appui à chaque passage devant vous':'Course terminée – voir Résultats';
   $('go').disabled=S.t0!=null;$('stop').disabled=!run;$('undo').disabled=!run||!S.log.length;
   $('cards').innerHTML=S.st.map((st,i)=>{
     let info='Tours : 0';
@@ -263,7 +266,7 @@ $('stop').onclick=()=>{if(confirm('Terminer la course maintenant ?'))finish();};
 $('undo').onclick=()=>{const a=S.log.pop();if(!a)return;const st=S.st[a.i];
   st.laps.pop();
   save();draw();};
-$('reset').onclick=()=>{if(!confirm('Effacer tous les passages ? (noms et projets conservés)'))return;
+$('reset').onclick=()=>{if(!confirm('Nouvelle course : effacer tous les passages ? (noms et projets conservés)'))return;
   S.t0=null;S.stopT=null;S.log=[];S.st.forEach(s=>{s.laps=[];s.pauses=[];delete s.maxP;});save();draw();};
 function finish(){
   S.stopT=Math.min(now(),S.cfg.dur*60);save();
